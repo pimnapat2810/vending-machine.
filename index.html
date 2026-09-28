@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ตู้กดเครื่องเขียนอัตโนมัติ</title>
+
+  <!-- ฟอนต์ภาษาไทย -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="page">
+
+  <header class="page-header">
+    <h1>ตู้กดเครื่องเขียนอัตโนมัติ</h1>
+    <p>เลือกสินค้าด้วยรหัสหรือแตะที่สินค้า หยอดเงินหรือสแกนจ่าย แล้วรับของที่ช่องด้านล่างของตู้</p>
+  </header>
+
+  <!-- ==================== ตัวตู้ ==================== -->
+  <div class="machine">
+
+    <div class="machine-sign">ร้านเครื่องเขียน 24 ชั่วโมง</div>
+
+    <div class="machine-body">
+
+      <!-- ฝั่งซ้าย: ตู้กระจกโชว์สินค้า + ช่องรับของ -->
+      <section class="machine-left" id="machineLeft" aria-label="ตู้สินค้า">
+
+        <!-- ช่องสินค้า 15 ช่อง (สร้างด้วย script.js) -->
+        <div class="glass" id="shelf"></div>
+
+        <!-- ช่องรับสินค้า -->
+        <div class="tray" id="tray">
+          <div class="tray-flap">ช่องรับสินค้า (แตะที่ของเพื่อหยิบ)</div>
+          <div class="tray-items" id="trayItems"></div>
+        </div>
+
+      </section>
+
+      <!-- ฝั่งขวา: แผงควบคุม -->
+      <section class="panel" aria-label="แผงควบคุม">
+
+        <!-- จอแสดงผล -->
+        <div class="display" aria-live="polite">
+          <div id="displayLine1">กดรหัสสินค้า</div>
+          <div id="displayLine2">หรือแตะที่สินค้าในตู้</div>
+        </div>
+
+        <!-- เงินที่หยอดแล้ว -->
+        <div class="credit">
+          <span>เงินที่หยอด</span>
+          <span><strong id="creditAmount">0</strong> บาท</span>
+        </div>
+
+        <!-- แป้นกดรหัส -->
+        <div class="keypad" id="keypad">
+          <button type="button" class="key key-letter" data-key="A">A</button>
+          <button type="button" class="key key-letter" data-key="B">B</button>
+          <button type="button" class="key key-letter" data-key="C">C</button>
+          <button type="button" class="key" data-key="1">1</button>
+          <button type="button" class="key" data-key="2">2</button>
+          <button type="button" class="key" data-key="3">3</button>
+          <button type="button" class="key" data-key="4">4</button>
+          <button type="button" class="key" data-key="5">5</button>
+          <button type="button" class="key key-clear" data-key="ลบ">ลบ</button>
+        </div>
+
+        <!-- ระบบหยอดเงิน -->
+        <div class="money-area">
+          <p class="panel-title">หยอดเหรียญหรือธนบัตร</p>
+          <div class="coin-slot" id="coinSlot"></div>
+          <div class="coins">
+            <button type="button" class="coin" data-value="1" aria-label="หยอดเหรียญ 1 บาท">1</button>
+            <button type="button" class="coin" data-value="2" aria-label="หยอดเหรียญ 2 บาท">2</button>
+            <button type="button" class="coin" data-value="5" aria-label="หยอดเหรียญ 5 บาท">5</button>
+            <button type="button" class="coin coin-10" data-value="10" aria-label="หยอดเหรียญ 10 บาท">10</button>
+          </div>
+          <div class="coins notes-row">
+            <button type="button" class="note note-20" data-value="20" aria-label="ใส่ธนบัตร 20 บาท">20</button>
+            <button type="button" class="note note-50" data-value="50" aria-label="ใส่ธนบัตร 50 บาท">50</button>
+            <button type="button" class="note note-100" data-value="100" aria-label="ใส่ธนบัตร 100 บาท">100</button>
+          </div>
+        </div>
+
+        <!-- ปุ่มซื้อ / สแกน / คืนเงิน -->
+        <div class="actions">
+          <button type="button" class="btn btn-buy" id="btnBuyCash">ซื้อด้วยเงินที่หยอด</button>
+          <button type="button" class="btn btn-qr" id="btnQR">สแกนจ่าย QR</button>
+          <button type="button" class="btn btn-refund" id="btnRefund">คืนเงิน</button>
+        </div>
+
+        <!-- ช่องรับเงินทอน -->
+        <button type="button" class="change-cup" id="changeCup">
+          <span class="change-title">ช่องเงินทอน (แตะเพื่อเก็บเงิน)</span>
+          <span class="change-items" id="changeItems"></span>
+        </button>
+
+      </section>
+    </div>
+  </div>
+
+  <!-- ==================== ฐานข้อมูลหลังร้าน ==================== -->
+  <details class="backroom">
+    <summary>ฐานข้อมูลหลังร้าน: สต็อกและยอดขาย</summary>
+
+    <div class="backroom-content">
+      <div class="backroom-grid">
+
+        <div>
+          <h2>สต็อกสินค้า</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>สินค้า</th>
+                  <th>ราคา</th>
+                  <th>คงเหลือ</th>
+                  <th>เติม</th>
+                </tr>
+              </thead>
+              <tbody id="stockTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h2>ประวัติการขาย</h2>
+          <div class="summary-box">
+            <span>ขายแล้ว <strong id="salesCount">0</strong> ชิ้น</span>
+            <span>รวม <strong id="salesTotal">0</strong> บาท</span>
+          </div>
+          <ul class="sales-list" id="salesList"></ul>
+        </div>
+
+      </div>
+
+      <div class="backroom-buttons">
+        <button type="button" class="small-btn" id="btnRefillAll">เติมสต็อกเต็มทุกช่อง</button>
+        <button type="button" class="small-btn small-btn-light" id="btnClearSales">ล้างประวัติการขาย</button>
+        <button type="button" class="small-btn small-btn-danger" id="btnResetDb">รีเซ็ตฐานข้อมูลทั้งหมด</button>
+      </div>
+    </div>
+  </details>
+
+</main>
+
+<!-- ==================== หน้าต่างสแกนจ่าย QR ==================== -->
+<div class="modal" id="qrModal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+    <h2 id="qrTitle">สแกนจ่ายด้วย QR</h2>
+    <p id="qrItemText"></p>
+
+    <div class="qr-frame">
+      <canvas id="qrCanvas" width="200" height="200"></canvas>
+    </div>
+
+    <p class="qr-amount" id="qrAmount">0 บาท</p>
+    <p class="qr-shop">ร้านเครื่องเขียน 24 ชั่วโมง (QR จำลอง)</p>
+    <p class="qr-timer" id="qrTimer"></p>
+
+    <div class="modal-buttons">
+      <button type="button" class="btn btn-buy" id="btnQRPaid">จำลองว่าสแกนจ่ายสำเร็จ</button>
+      <button type="button" class="btn btn-refund" id="btnQRCancel">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ข้อความแจ้งเตือนเล็ก ๆ -->
+<div class="toast" id="toast"></div>
+
+<!-- ต้องโหลด database.js ก่อน script.js -->
+<script src="database.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
